@@ -34,6 +34,7 @@
     NSString* gender;
     NSString* language;
     NSString* birthday;
+    NSString* accessToken;
 }
 
 @property (readonly, nonatomic) Provider provider;
@@ -47,6 +48,7 @@
 @property (strong, nonatomic) NSString* gender;
 @property (strong, nonatomic) NSString* language;
 @property (strong, nonatomic) NSString* birthday;
+@property (strong, nonatomic) NSString* accessToken;
 
 /**
  Constructor

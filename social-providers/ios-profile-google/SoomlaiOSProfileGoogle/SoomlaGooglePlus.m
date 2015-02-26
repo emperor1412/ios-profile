@@ -320,7 +320,7 @@ static NSString *TAG = @"SOOMLA SoomlaGooglePlus";
     profile.location = [self parseGoogleContactInfoString:googleContact.currentLocation];
     profile.avatarLink = [self parseGoogleContactInfoString:[googleContact.image url]];
     profile.language = [self parseGoogleContactInfoString:googleContact.language];
-    
+    profile.accessToken = [[[GPPSignIn sharedInstance] authentication] accessToken];
     return profile;
 }
 
