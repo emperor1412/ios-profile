@@ -28,3 +28,4 @@ extern NSString *const UP_GENDER;
 extern NSString *const UP_LANGUAGE;
 extern NSString *const UP_BIRTHDAY;
 extern NSString *const UP_ACCESSTOKEN;
+extern NSString *const UP_SECRETKEY;

@@ -50,6 +50,9 @@
 @property (strong, nonatomic) loginCancel loginCancel;
 @property (strong, nonatomic) logoutSuccess logoutSuccess;
 
+@property (strong, nonatomic, readonly) NSString *oauthToken;
+@property (strong, nonatomic, readonly) NSString *oauthSecret;
+
 @end
 
 #pragma clang diagnostic pop

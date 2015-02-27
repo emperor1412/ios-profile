@@ -21,7 +21,7 @@
 
 @implementation UserProfile
 
-@synthesize provider, profileId, email, username, firstName, lastName, avatarLink, location, gender, language, birthday, accessToken;
+@synthesize provider, profileId, email, username, firstName, lastName, avatarLink, location, gender, language, birthday, accessToken, secretKey;
 
 
 - (id)initWithProvider:(Provider)oProvider
@@ -57,6 +57,7 @@
         self.language = [dict objectForKey:UP_LANGUAGE];
         self.birthday = [dict objectForKey:UP_BIRTHDAY];
         self.accessToken = [dict objectForKey: UP_ACCESSTOKEN];
+        self.secretKey = [dict objectForKey: UP_SECRETKEY];
     }
     
     return self;
@@ -77,6 +78,7 @@
             (self.language ?: [NSNull null]), UP_LANGUAGE,
             (self.birthday ?: [NSNull null]), UP_BIRTHDAY,
             (self.accessToken ?: [NSNull null]), UP_ACCESSTOKEN,
+            (self.secretKey ?: [NSNull null]), UP_SECRETKEY,
             nil];
 }
 

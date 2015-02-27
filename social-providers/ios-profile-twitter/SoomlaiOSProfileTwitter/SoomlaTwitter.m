@@ -116,21 +116,43 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
     }
     else {
         // Try to verify account using native Twitter support in iOS
-        self.twitter = [STTwitterAPI twitterAPIOSWithFirstAccount];
-        
-        [self.twitter verifyCredentialsWithSuccessBlock:^(NSString *username) {
-            loggedInUser = username;
-            success([self getProvider]);
+        self.twitter = [STTwitterAPI twitterAPIWithOAuthConsumerKey:self.consumerKey
+                                                     consumerSecret:self.consumerSecret];
+        [self.twitter postReverseOAuthTokenRequest:^(NSString *authenticationHeader) {
+            STTwitterAPI *twitterAPIOS = [STTwitterAPI twitterAPIOSWithFirstAccount];
+            [twitterAPIOS verifyCredentialsWithSuccessBlock:^(NSString *username) {
+                [twitterAPIOS postReverseAuthAccessTokenWithAuthenticationHeader:authenticationHeader
+                                                                    successBlock:^(NSString *oAuthToken, NSString *oAuthTokenSecret,
+                                                                                   NSString *userID, NSString *screenName) {
+                                                                        _oauthToken = oAuthToken;
+                                                                        _oauthSecret = oAuthTokenSecret;
+                                                                        
+                                                                        NSString *message = [NSString stringWithFormat:@"---------- DEBUGGING NOW FROM NATIVE: Token: %@",_oauthSecret];
+                                                                        LogDebug(TAG, message);
+                                                                        
+                                                                        [KeyValueStorage setValue:oAuthToken forKey:[self getTwitterStorageKey:TWITTER_OAUTH_TOKEN]];
+                                                                        [KeyValueStorage setValue:oAuthTokenSecret forKey:[self getTwitterStorageKey:TWITTER_OAUTH_SECRET]];
+                                                                        
+                                                                        loggedInUser = username;
+                                                                        success([self getProvider]);
+                                                                    } errorBlock:^(NSError *error) {
+                                                                        LogError(TAG, @"User denied access");
+                                                                        fail([NSString stringWithFormat:@"%ld: %@", (long)error.code, error.localizedDescription]);
+                                                                    }];
+            } errorBlock:^(NSError *error) {
+                if (error.code == STTwitterOSUserDeniedAccessToTheirAccounts) {
+                    // User has literally blocked your application
+                    LogError(TAG, @"User denied access");
+                    fail([NSString stringWithFormat:@"%ld: %@", (long)error.code, error.localizedDescription]);
+                }
+                else {
+                    LogDebug(TAG, @"Unable to natively login to Twitter trying via web");
+                    [self loginWithWeb:success fail:fail cancel:cancel];
+                }
+            }];
         } errorBlock:^(NSError *error) {
-            if (error.code == STTwitterOSUserDeniedAccessToTheirAccounts) {
-                // User has literally blocked your application
-                LogError(TAG, @"User denied access");
-                fail([NSString stringWithFormat:@"%ld: %@", (long)error.code, error.localizedDescription]);
-            }
-            else {
-                LogDebug(TAG, @"Unable to natively login to Twitter trying via web");
-                [self loginWithWeb:success fail:fail cancel:cancel];
-            }
+            LogError(TAG, @"User denied access");
+            fail([NSString stringWithFormat:@"%ld: %@", (long)error.code, error.localizedDescription]);
         }];
     }
 }
@@ -173,6 +195,9 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
     NSString *oauthToken = [KeyValueStorage getValueForKey:[self getTwitterStorageKey:TWITTER_OAUTH_TOKEN]];
     NSString *oauthSecret = [KeyValueStorage getValueForKey:[self getTwitterStorageKey:TWITTER_OAUTH_SECRET]];
     
+    _oauthToken = oauthToken;
+    _oauthSecret = oauthSecret;
+    
     if ([self isEmptyString:oauthToken] || [self isEmptyString:oauthSecret]) {
         return NO;
     }
@@ -204,6 +229,9 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
     // Final step in authentication
     [self.twitter postAccessTokenRequestWithPIN:verifier successBlock:^(NSString *oauthToken, NSString *oauthTokenSecret, NSString *userID, NSString *screenName) {
         
+        _oauthToken = oauthToken;
+        _oauthSecret = oauthTokenSecret;
+        
         [KeyValueStorage setValue:oauthToken forKey:[self getTwitterStorageKey:TWITTER_OAUTH_TOKEN]];
         [KeyValueStorage setValue:oauthTokenSecret forKey:[self getTwitterStorageKey:TWITTER_OAUTH_SECRET]];
         
@@ -220,6 +248,8 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
 - (void)getUserProfile:(userProfileSuccess)success fail:(userProfileFail)fail {
     [self.twitter getUserInformationFor:loggedInUser successBlock:^(NSDictionary *user) {
         UserProfile *userProfile = [self parseUserProfile:user];
+        userProfile.accessToken = self.oauthToken;
+        userProfile.secretKey = self.oauthSecret;
         success(userProfile);
     } errorBlock:^(NSError *error) {
         fail([NSString stringWithFormat:@"%ld: %@", (long)error.code, error.localizedDescription]);
@@ -453,6 +483,8 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
 }
 
 - (void)cleanTokensFromDB {
+    _oauthToken = nil;
+    _oauthSecret = nil;
     [KeyValueStorage deleteValueForKey:[self getTwitterStorageKey:TWITTER_OAUTH_TOKEN]];
     [KeyValueStorage deleteValueForKey:[self getTwitterStorageKey:TWITTER_OAUTH_SECRET]];
 }

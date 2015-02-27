@@ -28,3 +28,4 @@ NSString *const UP_GENDER           = @"gender";
 NSString *const UP_LANGUAGE         = @"language";
 NSString *const UP_BIRTHDAY         = @"birthday";
 NSString *const UP_ACCESSTOKEN      = @"accessToken";
+NSString *const UP_SECRETKEY        = @"secretKey";
