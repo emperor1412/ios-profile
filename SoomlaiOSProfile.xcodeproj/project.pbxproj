@@ -24,6 +24,8 @@
 		3AF01CDF1960BD6E0088836B /* PJSONConsts.h in Headers */ = {isa = PBXBuildFile; fileRef = EF356F25193CA1770081DCE0 /* PJSONConsts.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3AF01CE01960BD730088836B /* UserProfileStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = EF356F37193CBEEB0081DCE0 /* UserProfileStorage.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3AFD6F1C1986E174001360D9 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AFD6F1B1986E173001360D9 /* UIKit.framework */; };
+		9D448D971B0A13B400C60D0A /* ConfirmationDialog.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D448D951B0A13B400C60D0A /* ConfirmationDialog.h */; };
+		9D448D981B0A13B400C60D0A /* ConfirmationDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = 9D448D961B0A13B400C60D0A /* ConfirmationDialog.m */; };
 		EF356EFE193C90560081DCE0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF356EFD193C90560081DCE0 /* Foundation.framework */; };
 		EF356F03193C90560081DCE0 /* SoomlaProfile.h in Copy Files */ = {isa = PBXBuildFile; fileRef = EF356F02193C90560081DCE0 /* SoomlaProfile.h */; };
 		EF356F05193C90560081DCE0 /* SoomlaProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF356F04193C90560081DCE0 /* SoomlaProfile.m */; };
@@ -56,6 +58,8 @@
 /* Begin PBXFileReference section */
 		3ABE080A195F422A008085AA /* SocialActionUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SocialActionUtils.m; sourceTree = "<group>"; };
 		3AFD6F1B1986E173001360D9 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		9D448D951B0A13B400C60D0A /* ConfirmationDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConfirmationDialog.h; sourceTree = "<group>"; };
+		9D448D961B0A13B400C60D0A /* ConfirmationDialog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConfirmationDialog.m; sourceTree = "<group>"; };
 		EF356EFA193C90560081DCE0 /* libSoomlaiOSProfile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSoomlaiOSProfile.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		EF356EFD193C90560081DCE0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		EF356F01193C90560081DCE0 /* SoomlaiOSProfile-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SoomlaiOSProfile-Prefix.pch"; sourceTree = "<group>"; };
@@ -135,6 +139,8 @@
 		EF356EFF193C90560081DCE0 /* SoomlaiOSProfile */ = {
 			isa = PBXGroup;
 			children = (
+				9D448D951B0A13B400C60D0A /* ConfirmationDialog.h */,
+				9D448D961B0A13B400C60D0A /* ConfirmationDialog.m */,
 				EF356F02193C90560081DCE0 /* SoomlaProfile.h */,
 				EF356F04193C90560081DCE0 /* SoomlaProfile.m */,
 				EF356F14193C90560081DCE0 /* Supporting Files */,
@@ -238,6 +244,7 @@
 				3AF01CD21960BCCC0088836B /* SoomlaProfile.h in Headers */,
 				3AF01CDD1960BD500088836B /* UserProfile.h in Headers */,
 				3AF01CD31960BCD60088836B /* ProfileEventHandling.h in Headers */,
+				9D448D971B0A13B400C60D0A /* ConfirmationDialog.h in Headers */,
 				3AF01CD41960BCDB0088836B /* UserProfileUtils.h in Headers */,
 				3AF01CD91960BD1B0088836B /* ProviderNotFoundException.h in Headers */,
 				3AF01CDA1960BD1E0088836B /* UserProfileNotFoundException.h in Headers */,
@@ -327,6 +334,7 @@
 				EF356F39193CBEEB0081DCE0 /* UserProfileStorage.m in Sources */,
 				EFAE6BD6193CDEEE0077EF7F /* ProviderLoader.m in Sources */,
 				EF356F30193CAD580081DCE0 /* ProfileEventHandling.m in Sources */,
+				9D448D981B0A13B400C60D0A /* ConfirmationDialog.m in Sources */,
 				EF356F35193CB6D60081DCE0 /* UserProfileUtils.m in Sources */,
 				EFAE6BE8193DC6310077EF7F /* UserProfileNotFoundException.m in Sources */,
 				EF356F27193CA1770081DCE0 /* PJSONConsts.m in Sources */,

@@ -53,7 +53,9 @@
 // UserProfile Elements
 #define DICT_ELEMENT_USER_PROFILE               @"userProfile"
 #define DICT_ELEMENT_PROVIDER                   @"provider"
+#define DICT_ELEMENT_FROM_START                 @"fromStart"
 #define DICT_ELEMENT_PAYLOAD                    @"payload"
+#define DICT_ELEMENT_HAS_MORE                   @"hasMore"
 #define DICT_ELEMENT_SOCIAL_ACTION_TYPE         @"socialActiontype"
 #define DICT_ELEMENT_MESSAGE                    @"message"
 #define DICT_ELEMENT_CONTACTS                   @"contacts"
@@ -199,7 +201,7 @@ Called when the service has been initializedt.
  @param provider The provider on which the get contacts process started
  @param socialActionType The social action which is preformed
  */
-+ (void)postGetContactsStarted:(Provider)provider withType:(SocialActionType)socialActionType withPayload:(NSString *)payload;
++ (void)postGetContactsStarted:(Provider)provider withType:(SocialActionType)socialActionType withFromStart:(bool)fromStart withPayload:(NSString *)payload;
 
 /**
  Called when the get contacts process from a provider has finished. Which fires the
@@ -209,7 +211,7 @@ Called when the service has been initializedt.
  @param socialActionType The social action which is preformed
  @param contacts an Array of contacts represented by `UserProfile`
  */
-+ (void)postGetContactsFinished:(Provider)provider withType:(SocialActionType)socialActionType withContacts:(NSArray *)contacts withPayload:(NSString *)payload;
++ (void)postGetContactsFinished:(Provider)provider withType:(SocialActionType)socialActionType withContacts:(NSArray *)contacts withPayload:(NSString *)payload withHasMore:(bool)hasMore;
 
 /**
  Called when the get contacts process from a provider has failed. Which fires the
@@ -220,7 +222,7 @@ Called when the service has been initializedt.
  @param socialActionType The social action which is preformed
  @param message a Description of the reason for failure
  */
-+ (void)postGetContactsFailed:(Provider)provider withType:(SocialActionType)socialActionType withMessage:(NSString *)message withPayload:(NSString *)payload;
++ (void)postGetContactsFailed:(Provider)provider withType:(SocialActionType)socialActionType withMessage:(NSString *)message withFromStart:(bool)fromStart withPayload:(NSString *)payload;
 
 /**
  Called when the get feed process from a provider has started. Which fires the
@@ -229,7 +231,7 @@ Called when the service has been initializedt.
  @param provider The provider on which the get feed process started
  @param socialActionType The social action which is preformed
  */
-+ (void)postGetFeedStarted:(Provider)provider withType:(SocialActionType)socialActionType withPayload:(NSString *)payload;
++ (void)postGetFeedStarted:(Provider)provider withType:(SocialActionType)socialActionType withFromStart:(bool)fromStart withPayload:(NSString *)payload;
 
 /**
  Called when the get feed process from a provider has finished. Which fires the
@@ -239,7 +241,7 @@ Called when the service has been initializedt.
  @param socialActionType The social action which is preformed
  @param feeds an Array of feed entries represented by `NSString`
  */
-+ (void)postGetFeedFinished:(Provider)provider withType:(SocialActionType)socialActionType withContacts:(NSArray *)feeds withPayload:(NSString *)payload;
++ (void)postGetFeedFinished:(Provider)provider withType:(SocialActionType)socialActionType withContacts:(NSArray *)feeds withPayload:(NSString *)payload withHasMore:(bool)hasMore;
 
 /**
  Called when the get feed process from a provider has failed. Which fires the
@@ -250,6 +252,6 @@ Called when the service has been initializedt.
  @param socialActionType The social action which is preformed
  @param message a Description of the reason for failure
  */
-+ (void)postGetFeedFailed:(Provider)provider withType:(SocialActionType)socialActionType withMessage:(NSString *)message withPayload:(NSString *)payload;
++ (void)postGetFeedFailed:(Provider)provider withType:(SocialActionType)socialActionType withMessage:(NSString *)message withFromStart:(bool)fromStart withPayload:(NSString *)payload;
 
 @end

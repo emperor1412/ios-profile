@@ -1,12 +1,12 @@
 /*
  Copyright (C) 2012-2014 Soomla Inc.
- 
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
- 
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,14 +18,14 @@
 #import "SocialCallbacks.h"
 
 /**
- A provider that exposes social capabilities such as sharing, fetching user 
+ A provider that exposes social capabilities such as sharing, fetching user
  feeds, uploading images etc.
  */
 @protocol ISocialProvider <IAuthProvider>
 
 /**
  Shares the given status to the user's feed
- 
+
  @param status the text to share
  @param success a status update success callback
  @param fail a status update failure callback
@@ -35,7 +35,7 @@
 /**
  Shares the given status and link to the user's feed using the provider's
  native dialog (when available)
- 
+
  @param link the link to share (could be nil when not needed)
  @param success a status update success callback
  @param fail a status update failure callback
@@ -44,7 +44,7 @@
 
 /**
  Share a story to the user's feed.  This is very oriented for Facebook.
- 
+
  @param message The main text which will appear in the story
  @param name The headline for the link which will be integrated in the
  story
@@ -68,7 +68,7 @@
 /**
  Share a story to the user's feed.  This is very oriented for Facebook.
  Using the provider's native dialog (when available)
- 
+
  @param name The headline for the link which will be integrated in the
  story
  @param caption The sub-headline for the link which will be
@@ -89,23 +89,24 @@
 
 /**
  Fetches the user's contact list
- 
+
+ @param fromStart Should we reset pagination or request the next page
  @param success a contacts fetch success callback
  @param fail a contacts fetch failure callback
  */
-- (void)getContacts:(contactsActionSuccess)success fail:(contactsActionFail)fail;
+- (void)getContacts:(bool)fromStart success:(contactsActionSuccess)success fail:(contactsActionFail)fail;
 
 /**
  Fetches the user's feed
- 
+
  @param success a contacts fetch success callback
  @param fail a contacts fetch failure callback
  */
-- (void)getFeed:(feedsActionSuccess)success fail:(feedsActionFail)fail;
+- (void)getFeed:(bool)fromStart success:(feedsActionSuccess)success fail:(feedsActionFail)fail;
 
 /**
  Shares a photo to the user's feed
- 
+
  @param message A text that will accompany the image
  @param filePath The desired image's location on the device
  @param success an upload image success callback
@@ -133,10 +134,10 @@
 
 /**
  Opens up a page to like for the user (external)
- 
- @param pageName The page to open on the provider
+
+ @param pageId The page to open on the provider
  @param reward The reward to grant when page is liked
  */
-- (void)like:(NSString *)pageName;
+- (void)like:(NSString *)pageId;
 
 @end

@@ -1,12 +1,12 @@
 /*
  Copyright (C) 2012-2014 Soomla Inc.
- 
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
- 
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,7 +36,7 @@ BOOL isLoginState = YES;
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loginStarted:) name:EVENT_UP_LOGIN_STARTED object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loginFinished:) name:EVENT_UP_LOGIN_FINISHED object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loginFailed:) name:EVENT_UP_LOGIN_FAILED object:nil];
@@ -50,14 +50,14 @@ BOOL isLoginState = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(socialActionFinished:) name:EVENT_UP_SOCIAL_ACTION_FINISHED object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(rewardGiven:) name:EVENT_REWARD_GIVEN object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(profileInitialized:) name:EVENT_UP_PROFILE_INITIALIZED object:nil];
-    
+
     NSDictionary* providerParams = @{ @(TWITTER) :
-                                          @{ @"consumerKey": @"T8NMGwKq6USYCjZox86Bxd2RJ",
-                                             @"consumerSecret": @"TO88J9QjIJlSGfuyfza9Ox2OgTsLc1rjcmaJknlIMuUw0T1I30" },
+                                          @{ @"consumerKey": @"[YOUR CONSUMER KEY]",
+                                             @"consumerSecret": @"[YOUR CONSUMER SECRET]" },
                                       @(GOOGLE) :
-                                          @ {@"clientId": @"833688084302-aojkncr5afnj8ddh6peviri2f8orckai.apps.googleusercontent.com"} };
+                                          @ {@"clientId": @"[YOUR CLIENT ID"} };
     [[SoomlaProfile getInstance] initialize:providerParams];
-    
+
     if ([[SoomlaProfile getInstance] isLoggedInWithProvider:TARGET_PROVIDER]) {
         [self setLoginVisibility:NO];
     }
@@ -69,9 +69,9 @@ BOOL isLoginState = YES;
     // Dispose of any resources that can be recreated.
 }
 - (IBAction)buttonTouched:(id)sender {
-    
+
     if ([[SoomlaProfile getInstance] isLoggedInWithProvider:TARGET_PROVIDER] && !isLoginState) {
-        
+
         [[SoomlaProfile getInstance] logoutWithProvider:TARGET_PROVIDER];
     } else {
         TARGET_PROVIDER = FACEBOOK;
@@ -92,7 +92,7 @@ BOOL isLoginState = YES;
 - (void) loginToCurrentProvider {
     // Retrieve the app delegate
     AppDelegate* appDelegate = [UIApplication sharedApplication].delegate;
-    
+
     [[SoomlaProfile getInstance] loginWithProvider:TARGET_PROVIDER andPayload:@"" andReward:appDelegate.loginReward];
 }
 
@@ -106,7 +106,7 @@ BOOL isLoginState = YES;
     AppDelegate* appDelegate = [UIApplication sharedApplication].delegate;
 
     [[SoomlaProfile getInstance] updateStatusWithProvider:TARGET_PROVIDER andStatus:@"Test status" andReward:appDelegate.updateStatusReward];
-    
+
     // Or with dialog
     //[[SoomlaProfile getInstance] updateStatusWithProviderDialog:TARGET_PROVIDER andLink:@"http://www.soom.la" andPayload:@"status" andReward:appDelegate.updateStatusReward];
 }
@@ -115,7 +115,7 @@ BOOL isLoginState = YES;
 
     // Retrieve the app delegate
     AppDelegate* appDelegate = [UIApplication sharedApplication].delegate;
-    
+
     [[SoomlaProfile getInstance] updateStoryWithProvider:TARGET_PROVIDER
                                               andMessage:@"Message"
                                                  andName:@"Name"
@@ -144,12 +144,12 @@ BOOL isLoginState = YES;
     LogDebug(TAG, @"Login Success: you are now logged in to Facebook");
     // TODO: extract user profile object from notification
     // NSDictionary* userInfo = notification.userInfo;
-    
+
     [self setLoginVisibility:NO];
-    
+
 //    AppDelegate* appDelegate = [UIApplication sharedApplication].delegate;
 //    if (appDelegate.likeReward.canGive == YES) {
-//        [[SoomlaProfile getInstance] like:TARGET_PROVIDER andPageName:@"The.SOOMLA.Project" andReward:appDelegate.likeReward];
+//        [[SoomlaProfile getInstance] like:TARGET_PROVIDER andPageId:@"The.SOOMLA.Project" andReward:appDelegate.likeReward];
 //    }
 }
 
@@ -176,17 +176,17 @@ BOOL isLoginState = YES;
     else {
         [self.loginButton setTitle:@"Login with Facebook to earn 100 coins" forState:UIControlStateNormal];
     }
-    
+
     [self.loginTwitterButton setHidden:!visible];
     [self.loginGoogleButton setHidden:!visible];
-    
+
     [self.updateStatusButton setHidden:visible];
     [self.updateStoryButton setHidden:visible];
     [self.uploadImageButton setHidden:visible];
     [self.getContactsButton setHidden:visible];
     [self.getFeedButton setHidden:visible];
     [self.backButton setHidden:visible];
-    
+
     isLoginState = visible;
 }
 
@@ -267,4 +267,3 @@ BOOL isLoginState = YES;
 }
 
 @end
-

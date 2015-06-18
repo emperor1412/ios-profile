@@ -51,7 +51,7 @@
  @param state The state to which the session just changed
  @param error An error if such occurred
  */
-- (void)sessionStateChanged:(FBSession *)session state:(FBSessionState) state error:(NSError *)error;
+- (void)sessionStateChanged:(__unused FBSession *)session state:(FBSessionState) state error:(NSError *)error;
 
 @end
 
