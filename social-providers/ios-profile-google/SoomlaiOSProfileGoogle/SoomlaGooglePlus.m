@@ -86,6 +86,8 @@ static Method swizzledMethod = nil;
     if (!self)
         return nil;
 
+    
+    
     //replace `openURL:` original method
     [self openURLSwizzle:YES];
 
@@ -156,8 +158,9 @@ static Method swizzledMethod = nil;
 }
 
 - (void)startGooglePlusAuth{
+    /*
     GPPSignIn *signIn = [GPPSignIn sharedInstance];
-    GPPShare *share = [GPPShare sharedInstance];
+    
     NSArray* scopes = @[kGTLAuthScopePlusLogin, kGTLAuthScopePlusUserinfoProfile];
     
     signIn.shouldFetchGoogleUserEmail = YES;
@@ -168,9 +171,23 @@ static Method swizzledMethod = nil;
     signIn.scopes = scopes;
     
     signIn.delegate = self;
-    share.delegate = self;
+
 
     [signIn authenticate];
+     */
+    
+    GPPShare *share = [GPPShare sharedInstance];
+    share.delegate = self;
+    
+    GIDSignIn* signIn = [GIDSignIn sharedInstance];
+
+    signIn.shouldFetchBasicProfile = YES;
+    signIn.clientID = self.clientId;
+    signIn.scopes = @[ kGTLAuthScopePlusLogin ];
+    signIn.delegate = self;
+    signIn.uiDelegate = self;
+    
+    [signIn signIn];
 }
 
 - (void)finishedWithAuth: (GTMOAuth2Authentication *)auth
@@ -185,9 +202,32 @@ static Method swizzledMethod = nil;
     }
 }
 
+#pragma mark - GIDSignInDelegate method
+- (void)signIn:(GIDSignIn *)signIn didSignInForUser:(GIDGoogleUser *)user withError:(NSError *)error {
+    // Perform any operations on signed in user here.
+    NSLog(@"%@", signIn);
+    [self finishedWithAuth:nil error:error];
+}
+- (void)signIn:(GIDSignIn *)signIn didDisconnectWithUser:(GIDGoogleUser *)user withError:(NSError *)error {
+    // Perform any operations when the user disconnects from app here.
+    NSLog(@"%@", signIn);
+    [self finishedWithAuth:nil error:error];
+}
+
+#pragma mark - GIDSignInUIDelegate methods
+- (void)signIn:(GIDSignIn *)signIn presentViewController:(UIViewController *)viewController {
+    [[[UIApplication sharedApplication] keyWindow].rootViewController presentViewController:viewController animated:YES completion:nil];
+}
+
+- (void)signIn:(GIDSignIn *)signIn dismissViewController:(UIViewController *)viewController {
+    [viewController dismissViewControllerAnimated:YES completion:nil];
+}
+#pragma mark -
+
 
 -(void)refreshInterfaceBasedOnSignIn {
-    if ([[GPPSignIn sharedInstance] authentication]) {
+//    if ([[GPPSignIn sharedInstance] authentication]) {
+    if ([[GIDSignIn sharedInstance] currentUser]) {
         self.loginSuccess(GOOGLE);
     } else {
         [self clearLoginBlocks];
@@ -197,30 +237,68 @@ static Method swizzledMethod = nil;
 
 - (void)getUserProfile:(userProfileSuccess)success fail:(userProfileFail)fail{
     LogDebug(TAG, @"getUserProfile");
-    GTLServicePlus* plusService = [[GTLServicePlus alloc] init];
-    plusService.retryEnabled = YES;
-    [plusService setAuthorizer:[GPPSignIn sharedInstance].authentication];
     
-    GTLQueryPlus *query = [GTLQueryPlus queryForPeopleGetWithUserId:@"me"];
-    [plusService executeQuery:query
-            completionHandler:^(GTLServiceTicket *ticket,
-                                GTLPlusPerson *person,
-                                NSError *error) {
-                if (error) {
-                    LogError(TAG, @"Failed getting user profile");
-                    fail([error localizedDescription]);
-                } else {
-                    UserProfile *userProfile = [self parseGoogleContact:person withExtraData:YES];
-                    success(userProfile);
-                }
-            }];
+    if([GPPSignIn sharedInstance].authentication) {
+        GTLServicePlus* plusService = [[GTLServicePlus alloc] init];
+        plusService.retryEnabled = YES;
+        
+        [plusService setAuthorizer:[GPPSignIn sharedInstance].authentication];
+        
+        GTLQueryPlus *query = [GTLQueryPlus queryForPeopleGetWithUserId:@"me"];
+        [plusService executeQuery:query
+                completionHandler:^(GTLServiceTicket *ticket,
+                                    GTLPlusPerson *person,
+                                    NSError *error) {
+                    if (error) {
+                        LogError(TAG, @"Failed getting user profile");
+                        fail([error localizedDescription]);
+                    } else {
+                        UserProfile *userProfile = [self parseGoogleContact:person withExtraData:YES];
+                        success(userProfile);
+                    }
+                }];
+    }
+    else if([[GIDSignIn sharedInstance] currentUser] && [[GIDSignIn sharedInstance] currentUser].authentication){
+        GIDGoogleUser* currentUser = [[GIDSignIn sharedInstance] currentUser];
+        
+        NSDictionary *extraDict = @{
+                                    @"access_token": currentUser.authentication.accessToken,
+                                    @"refresh_token": currentUser.authentication.refreshToken,
+                                    @"expiration_date": @((NSInteger) currentUser.authentication.accessTokenExpirationDate.timeIntervalSince1970)
+                                    };
+        
+        NSString* firstName = @"";
+        NSString* lastName = @"";
+        NSArray* separate = [currentUser.profile.name componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        
+        if([separate count] > 0) {
+            firstName = [separate objectAtIndex:0];
+            lastName = [[currentUser.profile.name substringFromIndex:[firstName length]] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        }
+        
+        UserProfile * profile =
+        [[UserProfile alloc] initWithProvider:GOOGLE
+                                 andProfileId:currentUser.userID
+                                  andUsername: @""
+                                     andEmail:currentUser.profile.email
+                                 andFirstName:firstName
+                                  andLastName:lastName
+                                     andExtra:extraDict];
+        success(profile);
+    }
+    else {
+        fail(@"User profile is null");
+    }
+    
 }
 
 - (void)logout:(logoutSuccess)success fail:(logoutFail)fail{
     LogDebug(TAG, @"logout");
     self.logoutSuccess = success;
     self.logoutFail = fail;
-    [[GPPSignIn sharedInstance] disconnect];
+    
+//    [[GPPSignIn sharedInstance] disconnect];
+    [[GIDSignIn sharedInstance] signOut];
 }
 
 - (void)didDisconnectWithError:(NSError *)error {
@@ -234,7 +312,8 @@ static Method swizzledMethod = nil;
 
 - (BOOL)isLoggedIn{
     LogDebug(TAG, @"isLoggedIn");
-    return ([GPPSignIn sharedInstance].authentication != nil);
+//    return ([GPPSignIn sharedInstance].authentication != nil);
+    return ([GIDSignIn sharedInstance].currentUser != nil);
 }
 
 - (BOOL)isAutoLogin {
@@ -263,15 +342,20 @@ static Method swizzledMethod = nil;
 
 - (BOOL)tryHandleOpenURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
     sourceApplication = @"com.apple.mobilesafari"; //GPPURLHandler doesn't want to catch URLSchemas from another apps (excluding google apps)
-    BOOL handledByGoogle = [GPPURLHandler handleURL:url
-                                  sourceApplication:sourceApplication
-                                         annotation:annotation];
+    
+//    BOOL handledByGoogle = [GPPURLHandler handleURL:url
+//                                  sourceApplication:sourceApplication
+//                                         annotation:annotation];
+    
+    BOOL handledByGoogle = [[GIDSignIn sharedInstance] handleURL:url sourceApplication:sourceApplication
+                               annotation:annotation];
     if (handledByGoogle) {
         if (self.webVC != nil) {
             [self.webVC dismissViewControllerAnimated:YES completion:nil];
             self.webVC = nil;
         }
     }
+    
     return handledByGoogle || [self startWebGooglePlusAuth:url];
 }
 

@@ -24,6 +24,7 @@
 		32CDBD461A0AA1B9001DF8A1 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32CDBD451A0AA1B9001DF8A1 /* Security.framework */; };
 		32CDBD481A0AA1C2001DF8A1 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32CDBD471A0AA1C2001DF8A1 /* SystemConfiguration.framework */; };
 		32CDBD4A1A0AA1CA001DF8A1 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32CDBD491A0AA1CA001DF8A1 /* UIKit.framework */; };
+		373C045A1BA81EA80024F153 /* GoogleSignIn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 373C04591BA81EA80024F153 /* GoogleSignIn.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -34,6 +35,7 @@
 			isEditable = 1;
 			outputFiles = (
 			);
+			script = "";
 		};
 /* End PBXBuildRule section */
 
@@ -80,6 +82,8 @@
 		32CDBD451A0AA1B9001DF8A1 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		32CDBD471A0AA1C2001DF8A1 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		32CDBD491A0AA1CA001DF8A1 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		373C04581BA81EA80024F153 /* GoogleSignIn.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = GoogleSignIn.bundle; path = ../google_signin_sdk_2_2_0/GoogleSignIn.bundle; sourceTree = "<group>"; };
+		373C04591BA81EA80024F153 /* GoogleSignIn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GoogleSignIn.framework; path = ../google_signin_sdk_2_2_0/GoogleSignIn.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +98,7 @@
 				32CDBD421A0AA1AC001DF8A1 /* CoreText.framework in Frameworks */,
 				32CDBD401A0AA1A5001DF8A1 /* CoreGraphics.framework in Frameworks */,
 				32CDBD3E1A0AA19E001DF8A1 /* CoreMotion.framework in Frameworks */,
+				373C045A1BA81EA80024F153 /* GoogleSignIn.framework in Frameworks */,
 				32CDBD3C1A0AA197001DF8A1 /* CoreLocation.framework in Frameworks */,
 				32CDBD3A1A0AA187001DF8A1 /* AssetsLibrary.framework in Frameworks */,
 				32CDBD381A0AA17F001DF8A1 /* AddressBook.framework in Frameworks */,
@@ -117,6 +122,8 @@
 		32CDBCF81A0A9528001DF8A1 = {
 			isa = PBXGroup;
 			children = (
+				373C04581BA81EA80024F153 /* GoogleSignIn.bundle */,
+				373C04591BA81EA80024F153 /* GoogleSignIn.framework */,
 				32CDBD491A0AA1CA001DF8A1 /* UIKit.framework */,
 				32CDBD471A0AA1C2001DF8A1 /* SystemConfiguration.framework */,
 				32CDBD451A0AA1B9001DF8A1 /* Security.framework */,
@@ -401,6 +408,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/libs",
+					"/Hoang/Unity3d/Soomla/unity3d-profile/submodules/ios-profile/social-providers/google_signin_sdk_2_2_0",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -420,6 +428,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/libs",
+					"/Hoang/Unity3d/Soomla/unity3d-profile/submodules/ios-profile/social-providers/google_signin_sdk_2_2_0",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
