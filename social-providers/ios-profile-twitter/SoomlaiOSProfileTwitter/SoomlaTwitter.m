@@ -34,7 +34,10 @@ NSString *const TWITTER_OAUTH_SECRET    = @"oauth.secret";
 
 // Private properties
 
-@interface SoomlaTwitter ()
+@interface SoomlaTwitter () {
+    NSString* accessToken;
+    NSString* secretKey;
+}
 
 @property (strong, nonatomic) STTwitterAPI *twitter;
 
@@ -123,12 +126,35 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
         [self loginWithWeb:success fail:fail cancel:cancel];
     }
     else {
-        // Try to verify account using native Twitter support in iOS
-        self.twitter = [STTwitterAPI twitterAPIOSWithFirstAccount];
-        
-        [self.twitter verifyCredentialsWithSuccessBlock:^(NSString *username) {
-            loggedInUser = username;
-            success([self getProvider]);
+        self.twitter = [STTwitterAPI twitterAPIWithOAuthConsumerKey:self.consumerKey
+                                                     consumerSecret:self.consumerSecret];
+        [self.twitter postReverseOAuthTokenRequest:^(NSString *authenticationHeader) {
+            STTwitterAPI *twitterAPIOS = [STTwitterAPI twitterAPIOSWithFirstAccount];
+            [twitterAPIOS verifyCredentialsWithSuccessBlock:^(NSString *username) {
+                [twitterAPIOS postReverseAuthAccessTokenWithAuthenticationHeader:authenticationHeader
+                                                                    successBlock:^(NSString *oAuthToken, NSString *oAuthTokenSecret,
+                                                                                   NSString *userID, NSString *screenName) {
+                                                                        
+                                                                        accessToken = oAuthToken;
+                                                                        secretKey = oAuthTokenSecret;
+                                                                        loggedInUser = username;
+                                                                        success([self getProvider]);
+                                                                        
+                                                                    } errorBlock:^(NSError *error) {
+                                                                        LogError(TAG, @"User denied access");
+                                                                        fail([NSString stringWithFormat:@"%ld: %@", (long)error.code, error.localizedDescription]);
+                                                                    }];
+            } errorBlock:^(NSError *error) {
+                if (error.code == STTwitterOSUserDeniedAccessToTheirAccounts) {
+                    // User has literally blocked your application
+                    LogError(TAG, @"User denied access");
+                    fail([NSString stringWithFormat:@"%ld: %@", (long)error.code, error.localizedDescription]);
+                }
+                else {
+                    LogDebug(TAG, @"Unable to natively login to Twitter trying via web");
+                    [self loginWithWeb:success fail:fail cancel:cancel];
+                }
+            }];
         } errorBlock:^(NSError *error) {
             if (error.code == STTwitterOSUserDeniedAccessToTheirAccounts) {
                 // User has literally blocked your application
@@ -139,6 +165,8 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
                 LogDebug(TAG, @"Unable to natively login to Twitter trying via web");
                 [self loginWithWeb:success fail:fail cancel:cancel];
             }
+            LogError(TAG, @"User denied access");
+            fail([NSString stringWithFormat:@"%ld: %@", (long)error.code, error.localizedDescription]);
         }];
     }
 }
@@ -157,44 +185,44 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
     
     self.twitter = [STTwitterAPI twitterAPIWithOAuthConsumerKey:self.consumerKey
                                                  consumerSecret:self.consumerSecret];
-
+    
     // Get request token to launch a browser instance
     // Provides meaningful URL Scheme to make the browser call the application back
     [_twitter postTokenRequest:^(NSURL *url, NSString *oauthToken) {
-                // Launch browser to have the user verify your application
-                // Should eventually return to tryHandleOpenURL
-                self.loginSuccess = success;
-                self.loginFail = fail;
-                self.loginCancel = cancel;
-//                [[UIApplication sharedApplication] openURL:url];
-
-                self.webVc = [[UIViewController alloc] init];
-                UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectMake(10, 20, 300, 500)];
-                webView.backgroundColor = [UIColor whiteColor];
-                webView.scalesPageToFit = YES;
-                webView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-                webView.delegate = self;
-                [webView setTranslatesAutoresizingMaskIntoConstraints:NO];
-                [[[UIApplication sharedApplication] keyWindow].rootViewController presentViewController:_webVc animated:YES completion:nil];
-                [self.webVc.view addSubview:webView];
-
-                NSDictionary *views = NSDictionaryOfVariableBindings(webView);
-
-                [self.webVc.view addConstraints:
-                        [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[webView]|"
-                                                                options:0
-                                                                metrics:nil
-                                                                  views:views]];
-
-                [self.webVc.view addConstraints:
-                        [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[webView]|"
-                                                                options:0
-                                                                metrics:nil
-                                                                  views:views]];
-
-                [webView loadRequest:[NSURLRequest requestWithURL:url]];
-
-            } authenticateInsteadOfAuthorize:NO
+        // Launch browser to have the user verify your application
+        // Should eventually return to tryHandleOpenURL
+        self.loginSuccess = success;
+        self.loginFail = fail;
+        self.loginCancel = cancel;
+        //                [[UIApplication sharedApplication] openURL:url];
+        
+        self.webVc = [[UIViewController alloc] init];
+        UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectMake(10, 20, 300, 500)];
+        webView.backgroundColor = [UIColor whiteColor];
+        webView.scalesPageToFit = YES;
+        webView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
+        webView.delegate = self;
+        [webView setTranslatesAutoresizingMaskIntoConstraints:NO];
+        [[[UIApplication sharedApplication] keyWindow].rootViewController presentViewController:_webVc animated:YES completion:nil];
+        [self.webVc.view addSubview:webView];
+        
+        NSDictionary *views = NSDictionaryOfVariableBindings(webView);
+        
+        [self.webVc.view addConstraints:
+         [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[webView]|"
+                                                 options:0
+                                                 metrics:nil
+                                                   views:views]];
+        
+        [self.webVc.view addConstraints:
+         [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[webView]|"
+                                                 options:0
+                                                 metrics:nil
+                                                   views:views]];
+        
+        [webView loadRequest:[NSURLRequest requestWithURL:url]];
+        
+    } authenticateInsteadOfAuthorize:NO
                     forceLogin:@(NO)
                     screenName:nil
                  oauthCallback:[NSString stringWithFormat:@"%@://twitter_access_tokens/", [self getURLScheme]]
@@ -251,8 +279,10 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
 
 - (void)getUserProfile:(userProfileSuccess)success fail:(userProfileFail)fail {
     [self.twitter getUserInformationFor:loggedInUser successBlock:^(NSDictionary *user) {
+     
         UserProfile *userProfile = [self parseUserProfile:user withExtraData:YES];
         success(userProfile);
+     
     } errorBlock:^(NSError *error) {
         fail([NSString stringWithFormat:@"%ld: %@", (long)error.code, error.localizedDescription]);
     }];
@@ -280,12 +310,12 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
     if (![[url scheme] isEqualToString:expectedScheme]) {
         return NO;
     }
-
+    
     if (self.webVc != nil) {
         [self.webVc dismissViewControllerAnimated:YES completion:nil];
         self.webVc = nil;
     }
-
+    
     NSDictionary *d = [self parametersDictionaryFromQueryString:[url query]];
     
     NSString *token = d[@"oauth_token"];
@@ -365,31 +395,31 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
     }
     
     LogDebug(TAG, @"Getting contacts");
-
+    
     NSString *cursor = fromStart ? nil : self.lastContactCursor;
     self.lastContactCursor = nil;
-
+    
     [self.twitter getFriendsListForUserID:loggedInUser orScreenName:loggedInUser cursor:cursor count:@"20" skipStatus:@(YES) includeUserEntities:@(YES)
                              successBlock:^(NSArray *users, NSString *previousCursor, NSString *nextCursor) {
-
+                                 
                                  self.lastContactCursor = nextCursor;
-
+                                 
                                  LogDebug(TAG, ([NSString stringWithFormat:@"Get contacts success: %@", users]));
-
+                                 
                                  NSMutableArray *contacts = [NSMutableArray array];
-
+                                 
                                  for (NSDictionary *userDict in users) {
                                      UserProfile *contact = [self parseUserProfile:userDict];
                                      [contacts addObject:contact];
                                  }
-
+                                 
                                  success(contacts, [nextCursor longLongValue] != 0);
-
+                                 
                              } errorBlock:^(NSError *error) {
-                LogError(TAG, ([NSString stringWithFormat:@"Get contacts error: %@", error.localizedDescription]));
-
-                fail([NSString stringWithFormat:@"%ld: %@", (long) error.code, error.localizedDescription]);
-            }];
+                                 LogError(TAG, ([NSString stringWithFormat:@"Get contacts error: %@", error.localizedDescription]));
+                                 
+                                 fail([NSString stringWithFormat:@"%ld: %@", (long) error.code, error.localizedDescription]);
+                             }];
 }
 
 - (void)getFeed:(bool)fromStart success:(feedsActionSuccess)success fail:(feedsActionFail)fail {
@@ -398,14 +428,14 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
     }
     
     LogDebug(TAG, @"Getting feed");
-
+    
     NSString *cursor = fromStart ? nil : self.lastFeedCursor;
     self.lastFeedCursor = nil;
-
+    
     [self.twitter getUserTimelineWithScreenName:loggedInUser sinceID:cursor maxID:nil count:DEFAULT_PAGE_SIZE
                                    successBlock:^(NSArray *statuses) {
                                        LogDebug(TAG, ([NSString stringWithFormat:@"Get feed success: %@", statuses]));
-
+                                       
                                        id lastId = nil;
                                        
                                        NSMutableArray *feeds = [NSMutableArray array];
@@ -441,15 +471,15 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
               uploadProgressBlock:^(NSInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite) {
                   // nothing to do here
               } successBlock:^(NSDictionary *imageDictionary, NSString *mediaID, NSString *size) {
-                [self.twitter postStatusUpdate:message inReplyToStatusID:nil
-                                      mediaIDs:@[mediaID] latitude:nil longitude:nil placeID:nil displayCoordinates:@(NO) trimUser:nil
-                                  successBlock:^(NSDictionary *status) {
-                                      LogDebug(TAG, ([NSString stringWithFormat:@"Upload image (status) success: %@", status]));
-                                      success();
-                                  } errorBlock:^(NSError *error) {
-                            LogError(TAG, ([NSString stringWithFormat:@"Upload image (status) error: %@", error]));
-                            fail([NSString stringWithFormat:@"%ld: %@", (long) error.code, error.localizedDescription]);
-                        }];
+                  [self.twitter postStatusUpdate:message inReplyToStatusID:nil
+                                        mediaIDs:@[mediaID] latitude:nil longitude:nil placeID:nil displayCoordinates:@(NO) trimUser:nil
+                                    successBlock:^(NSDictionary *status) {
+                                        LogDebug(TAG, ([NSString stringWithFormat:@"Upload image (status) success: %@", status]));
+                                        success();
+                                    } errorBlock:^(NSError *error) {
+                                        LogError(TAG, ([NSString stringWithFormat:@"Upload image (status) error: %@", error]));
+                                        fail([NSString stringWithFormat:@"%ld: %@", (long) error.code, error.localizedDescription]);
+                                    }];
               } errorBlock:^(NSError *error) {
                   LogError(TAG, ([NSString stringWithFormat:@"Upload image error: %@", error]));
                   fail([NSString stringWithFormat:@"%ld: %@", (long)error.code, error.localizedDescription]);
@@ -464,9 +494,9 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
     if (![self testLoggedIn:fail]) {
         return;
     }
-
+    
     LogDebug(TAG, @"Uploading image");
-
+    
     [self.twitter postMediaUploadData:imageData fileName:fileName uploadProgressBlock:^(NSInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite) {
         // nothing to do here
     } successBlock:^(NSDictionary *imageDictionary, NSString *mediaID, NSString *size) {
@@ -476,9 +506,9 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
                               LogDebug(TAG, ([NSString stringWithFormat:@"Upload image (status) success: %@", status]));
                               success();
                           } errorBlock:^(NSError *error) {
-                    LogError(TAG, ([NSString stringWithFormat:@"Upload image (status) error: %@", error]));
-                    fail([NSString stringWithFormat:@"%ld: %@", (long) error.code, error.localizedDescription]);
-                }];
+                              LogError(TAG, ([NSString stringWithFormat:@"Upload image (status) error: %@", error]));
+                              fail([NSString stringWithFormat:@"%ld: %@", (long) error.code, error.localizedDescription]);
+                          }];
     } errorBlock:^(NSError *error) {
         LogError(TAG, ([NSString stringWithFormat:@"Upload image error: %@", error]));
         fail([NSString stringWithFormat:@"%ld: %@", (long)error.code, error.localizedDescription]);
@@ -551,16 +581,16 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
             }
         }
     }
-
+    
     // According to: https://dev.twitter.com/rest/reference/get/users/show
     //
     // - Twitter does not supply email access: https://dev.twitter.com/faq#26
     NSDictionary *extraDict = nil;
     if (withExtraData) {
         extraDict = @{
-                @"access_token": (_twitter.oauthAccessToken ? _twitter.oauthAccessToken : [NSNull null]),
-                @"secret_key" :  (_twitter.oauthAccessTokenSecret ? _twitter.oauthAccessTokenSecret : [NSNull null])
-        };
+                      @"access_token": (_twitter.oauthAccessToken ? _twitter.oauthAccessToken :  (accessToken ? accessToken : [NSNull null])),
+                      @"secret_key" :  (_twitter.oauthAccessTokenSecret ? _twitter.oauthAccessTokenSecret : ( secretKey ? secretKey : [NSNull null]))
+                      };
     }
     UserProfile *userProfile = [[UserProfile alloc] initWithProvider:TWITTER
                                                         andProfileId:user[@"id_str"]
@@ -569,15 +599,15 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
                                                         andFirstName:firstName
                                                          andLastName:lastName
                                                             andExtra:extraDict];
-
+    
     // No gender information on Twitter:
     // https://twittercommunity.com/t/how-to-find-male-female-accounts-in-following-list/7367
     userProfile.gender = @"";
-
+    
     // No birthday on Twitter:
     // https://twittercommunity.com/t/how-can-i-get-email-of-user-if-i-use-api/7019/16
     userProfile.birthday = @"";
-
+    
     userProfile.language = user[@"lang"];
     userProfile.location = user[@"location"];
     userProfile.avatarLink = user[@"profile_image_url"];
