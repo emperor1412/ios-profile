@@ -558,7 +558,8 @@ static NSString *TAG            = @"SOOMLA SoomlaTwitter";
     NSDictionary *extraDict = nil;
     if (withExtraData) {
         extraDict = @{
-                @"access_token": (_twitter.oauthAccessToken ? _twitter.oauthAccessToken : [NSNull null])
+                @"access_token": (_twitter.oauthAccessToken ? _twitter.oauthAccessToken : [NSNull null]),
+                @"secret_key" :  (_twitter.oauthAccessTokenSecret ? _twitter.oauthAccessTokenSecret : [NSNull null])
         };
     }
     UserProfile *userProfile = [[UserProfile alloc] initWithProvider:TWITTER
