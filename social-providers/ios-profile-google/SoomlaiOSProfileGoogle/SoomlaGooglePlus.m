@@ -89,7 +89,7 @@ static Method swizzledMethod = nil;
     
     
     //replace `openURL:` original method
-    [self openURLSwizzle:YES];
+//    [self openURLSwizzle:YES];
 
     GoogleKeychainName = [NSString stringWithFormat:@"SoomlaGooglePlus: %@", [[NSBundle mainBundle] bundleIdentifier]];
     //subscribe to notification from unity via UnityAppController AppController_SendNotificationWithArg(kUnityOnOpenURL, notifData)
