@@ -56,8 +56,10 @@ static Method swizzledMethod = nil;
 
 -(BOOL)openURL:(NSURL *)url {
     //when original method is swizzled, swizzled method will contain original implementation
-    return [[SoomlaProfile getInstance] tryHandleOpenURL:url sourceApplication:[[NSBundle mainBundle] bundleIdentifier] annotation:nil] ||
-            ((BOOL (*)(id, Method, ...))method_invoke)([UIApplication sharedApplication], swizzledMethod, url);
+    BOOL flag = [[SoomlaProfile getInstance] tryHandleOpenURL:url sourceApplication:[[NSBundle mainBundle] bundleIdentifier] annotation:nil];
+    UIApplication* app =[UIApplication sharedApplication];
+    BOOL flag2 = ((BOOL (*)(id, Method, ...))method_invoke)(app, swizzledMethod, url);
+    return flag || flag2;
 }
 
 /*
@@ -341,7 +343,7 @@ static Method swizzledMethod = nil;
 }
 
 - (BOOL)tryHandleOpenURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-    sourceApplication = @"com.apple.mobilesafari"; //GPPURLHandler doesn't want to catch URLSchemas from another apps (excluding google apps)
+//    sourceApplication = @"com.apple.mobilesafari"; //GPPURLHandler doesn't want to catch URLSchemas from another apps (excluding google apps)
     
 //    BOOL handledByGoogle = [GPPURLHandler handleURL:url
 //                                  sourceApplication:sourceApplication
@@ -603,9 +605,16 @@ static Method swizzledMethod = nil;
         NSURL *url = [[notification userInfo] valueForKey:@"url"];
         NSString *sourceApplication = [[notification userInfo] valueForKey:@"sourceApplication"];
         id annotation = [[notification userInfo] valueForKey:@"annotation"];
+        
+        /*
         BOOL urlWasHandled = [GPPURLHandler handleURL:url
                                     sourceApplication:sourceApplication
                                            annotation:annotation];
+         */
+        
+        BOOL urlWasHandled = [[GIDSignIn sharedInstance] handleURL:url sourceApplication:sourceApplication
+                                                          annotation:annotation];
+
         
         LogDebug(TAG,
                  ([NSString stringWithFormat:@"urlWasHandled: %@",
